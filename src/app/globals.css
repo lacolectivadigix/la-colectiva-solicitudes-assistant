@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  /* Brand color system (light) */
+  --brand-surface: #E0F2FE; /* Tailwind sky-100 */
+  --brand-border: #BAE6FD;  /* Tailwind sky-200 */
+  --brand-text: #111827;    /* Tailwind gray-900, maximiza contraste (WCAG AAA) */
+  /* Brand primary & links (light) */
+  --brand-primary: #2563EB;        /* indigo-600 */
+  --brand-primary-hover: #1D4ED8;  /* indigo-700 */
+  --brand-on-primary: #FFFFFF;     /* text on primary */
+  --brand-ring: #2563EB;           /* focus ring color */
+  --brand-link: #2563EB;           /* link color */
+  --brand-link-hover: #1D4ED8;     /* link hover */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+    /* Brand color system (dark) */
+    --brand-surface: #0B1220; /* deep slate/blue for dark surfaces */
+    --brand-border: #1F3A5F;  /* muted border for dark mode */
+    --brand-text: #E5E7EB;    /* gray-200 for readable text */
+    /* Brand primary & links (dark) */
+    --brand-primary: #3B82F6;        /* blue-500 for better luminance */
+    --brand-primary-hover: #2563EB;  /* indigo-600 */
+    --brand-on-primary: #FFFFFF;     /* text on primary */
+    --brand-ring: #60A5FA;           /* blue-400 ring */
+    --brand-link: #60A5FA;           /* link color on dark */
+    --brand-link-hover: #93C5FD;     /* link hover on dark */
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Glasmorphism utilities and animations */
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes drift {
+  0% { transform: translate(0,0) rotate(0deg); }
+  50% { transform: translate(10px,-8px) rotate(6deg); }
+  100% { transform: translate(0,0) rotate(0deg); }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Soft grid background with radial fade mask */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgba(99,102,241,0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(99,102,241,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.grid-mask {
+  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 70%, transparent 100%);
+  mask-image: radial-gradient(ellipse at center, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.2) 70%, transparent 100%);
+}
+
+/* Glass helper class */
+.glass {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 10px 30px rgba(99,102,241,0.12);
+}
+
+/* Gradient shimmer effect for CTA borders */
+.gradient-shimmer {
+  background-image: linear-gradient(90deg, rgba(99,102,241,0) 0%, rgba(99,102,241,0.6) 50%, rgba(236,72,153,0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* Hover lift utility */
+.hover-lift {
+  transition: transform 300ms ease, box-shadow 300ms ease;
+}
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(99,102,241,0.18);
+}

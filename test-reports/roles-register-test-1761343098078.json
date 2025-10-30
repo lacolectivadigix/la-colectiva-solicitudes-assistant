@@ -1,0 +1,19 @@
+{
+  "roles": {
+    "present": [
+      "solicitante",
+      "administrador"
+    ],
+    "ensured": false
+  },
+  "register": {
+    "status": 400,
+    "body": {
+      "error": "Solo se permite correo @digix.co"
+    }
+  },
+  "cleanup": {
+    "deleted": false
+  },
+  "errors": []
+}

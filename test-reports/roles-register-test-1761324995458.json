@@ -1,0 +1,20 @@
+{
+  "roles": {
+    "present": [
+      "solicitante",
+      "administrador"
+    ],
+    "ensured": false
+  },
+  "register": {
+    "status": 400,
+    "body": {
+      "error": "Error insertando en tabla users",
+      "details": "new row for relation \"users\" violates check constraint \"password_hash_format\""
+    }
+  },
+  "cleanup": {
+    "deleted": false
+  },
+  "errors": []
+}

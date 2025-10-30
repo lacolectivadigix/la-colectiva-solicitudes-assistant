@@ -1,0 +1,57 @@
+{
+  "created": true,
+  "login": true,
+  "routes": {
+    "/api/protected/one": {
+      "status": 200,
+      "body": {
+        "route": "one",
+        "user": {
+          "id": "723a2272-3b0c-4af0-a711-53317a9d6cd5",
+          "email": "user8tkuxg09@example.com",
+          "email_verified": true,
+          "role": "usuario_prueba",
+          "username": "user8tkuxg09"
+        }
+      }
+    },
+    "/api/protected/two": {
+      "status": 200,
+      "body": {
+        "route": "two",
+        "user": {
+          "id": "723a2272-3b0c-4af0-a711-53317a9d6cd5",
+          "email": "user8tkuxg09@example.com",
+          "email_verified": true,
+          "role": "usuario_prueba",
+          "username": "user8tkuxg09"
+        },
+        "ok": true
+      }
+    },
+    "/api/protected/three": {
+      "status": 200,
+      "body": {
+        "route": "three",
+        "user": {
+          "id": "723a2272-3b0c-4af0-a711-53317a9d6cd5",
+          "email": "user8tkuxg09@example.com",
+          "email_verified": true,
+          "role": "usuario_prueba",
+          "username": "user8tkuxg09"
+        },
+        "message": "access granted"
+      }
+    }
+  },
+  "userMatch": true,
+  "deleted": true,
+  "details": {
+    "creds": {
+      "username": "user8tkuxg09",
+      "email": "user8tkuxg09@example.com",
+      "password": "Aagwp7!3009",
+      "role": "usuario_prueba"
+    }
+  }
+}
