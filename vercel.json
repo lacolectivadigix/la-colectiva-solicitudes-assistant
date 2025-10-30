@@ -12,5 +12,11 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/sync-db-to-kv",
+      "schedule": "0 5 * * *"
+    }
   ]
 }

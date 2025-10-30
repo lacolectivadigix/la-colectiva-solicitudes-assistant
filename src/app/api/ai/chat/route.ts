@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
-import { getSupabaseServerWithToken, getUserFromAuthHeader } from '@/lib/supabase/server'
+import { StreamingTextResponse } from 'ai'
+import { getUserFromAuthHeader, getSupabaseServerWithToken } from '@/lib/supabase/server'
+import { kv } from '@/lib/kv/client'
+import { enviarNotificacionEmail } from '@/lib/email/notifications'
 
 // Simple in-memory session store keyed by userId/sessionId
 type Estado =
@@ -18,7 +21,7 @@ type ServicioSeleccion = {
   servicio_id?: number
 }
 
-type SessionState = {
+export type SessionState = {
   step: Estado
   // Paso 1: cliente
   clienteId?: number
@@ -93,14 +96,14 @@ async function readUserText(req: Request): Promise<string> {
 
 export async function POST(req: Request) {
   // Autenticación: obtener token y usuario
-  const authHeader = req.headers.get('authorization')
-  const token = authHeader?.replace('Bearer ', '') || ''
-  const user = await getUserFromAuthHeader(req)
+  const { user, token } = await getUserFromAuthHeader(req)
   if (!user || !token) {
     return new NextResponse('Acceso no autorizado', { status: 401 })
   }
-  // Cliente Supabase autenticado con token del usuario
+
+  // Cliente Supabase autenticado (SOLO PARA ESCRITURA en PASO 6)
   const supabase = getSupabaseServerWithToken(token)
+
   // Inicializar sesión usando el user.id
   const { key, state } = await getOrInitSession(req, user.id)
   const userText = await readUserText(req)
@@ -123,21 +126,14 @@ export async function POST(req: Request) {
       )
     }
     try {
-      const { data: clientes, error } = await supabase
-        .from('clientes_digix')
-        .select('id, cliente, division_pais')
-        .ilike('cliente', `%${userText}%`)
-        .limit(25)
-
-      if (error) throw error
-      const rows = Array.isArray(clientes) ? clientes : []
+      const clientesJSON: string | null = await kv.get('cache:clientes')
+      const allRows: any[] = clientesJSON ? JSON.parse(clientesJSON) : []
+      const rows: any[] = allRows
+        .filter((r) => normalizeText(String(r.cliente || '')).includes(entrada))
+        .slice(0, 25)
       if (rows.length === 0) {
         // Intentar sugerencias por aproximación simple
-        const { data: todosClientes } = await supabase
-          .from('clientes_digix')
-          .select('cliente')
-          .limit(50)
-        const sugerencias = (todosClientes || [])
+        const sugerencias = allRows
           .map((r: any) => String(r.cliente || ''))
           .filter((c) => normalizeText(c).includes(entrada.slice(0, Math.max(1, Math.min(entrada.length, 3)))))
           .slice(0, 5)
@@ -197,8 +193,8 @@ export async function POST(req: Request) {
       // Interpretamos siguiente entrada como subdivisión cuando esté en este estado y clienteNombre ya está definido.
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Oops, se presentó un problema consultando clientes. ${err?.message || 'Intentalo de nuevo en un ratico.'}`
-      return NextResponse.json({ error: 'DB_CLIENTS', message: msg }, { status: 400 })
+      const msg = `Oops, se presentó un problema consultando clientes desde caché. ${err?.message || 'Intentalo de nuevo en un ratico.'}`
+      return NextResponse.json({ error: 'KV_CLIENTES', message: msg }, { status: 400 })
     }
   }
 
@@ -206,11 +202,9 @@ export async function POST(req: Request) {
   if (state.step === 'ESPERANDO_CLIENTE' && state.clienteNombre && !state.clienteId) {
     const subdiv = userText.trim()
     try {
-      const { data: filas } = await supabase
-        .from('clientes_digix')
-        .select('id, cliente, division_pais')
-        .eq('cliente', state.clienteNombre)
-      const lista = Array.isArray(filas) ? filas : []
+      const clientesJSON: string | null = await kv.get('cache:clientes')
+      const allRows: any[] = clientesJSON ? JSON.parse(clientesJSON) : []
+      const lista = allRows.filter((r) => String(r.cliente || '').trim() === state.clienteNombre)
       let elegido: any | null = null
       if (/general|ninguna/i.test(subdiv)) {
         elegido = lista.find((r) => r.division_pais == null) || null
@@ -233,8 +227,8 @@ export async function POST(req: Request) {
       const texto = `Listo, quedó ${state.clienteNombre}${elegido.division_pais ? ' / ' + elegido.division_pais : ''}. Ahora, contame qué servicio necesitas.`
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Problema consultando subdivisión de cliente. ${err?.message || ''}`
-      return NextResponse.json({ error: 'DB_CLIENTS_SUBDIV', message: msg }, { status: 400 })
+      const msg = `Problema consultando subdivisión de cliente desde caché. ${err?.message || ''}`
+      return NextResponse.json({ error: 'KV_CLIENTS_SUBDIV', message: msg }, { status: 400 })
     }
   }
 
@@ -243,11 +237,8 @@ export async function POST(req: Request) {
     const entrada = normalizeText(userText)
     const tokens = entrada.split(' ').filter(Boolean)
     try {
-      const { data: servRows, error: servErr } = await supabase
-        .from('servicios')
-        .select('id, categoria, subcategoria_1, subcategoria_2')
-      if (servErr) throw servErr
-      const rows = Array.isArray(servRows) ? servRows : []
+      const serviciosJSON: string | null = await kv.get('cache:servicios')
+      const rows: any[] = serviciosJSON ? JSON.parse(serviciosJSON) : []
       const candidatos = rows
         .map((r: any) => {
           const servNorm = normalizeText(String(r.subcategoria_2 || ''))
@@ -264,11 +255,7 @@ export async function POST(req: Request) {
         .sort((a, b) => (b.score - a.score) || (b.len - a.len))
 
       if (candidatos.length === 0) {
-        const { data: cats } = await supabase
-          .from('servicios')
-          .select('categoria')
-          .order('categoria', { ascending: true })
-        const opcionesCats = Array.from(new Set((cats || []).map((r: any) => r.categoria).filter(Boolean)))
+        const opcionesCats = Array.from(new Set((rows || []).map((r: any) => r.categoria).filter(Boolean)))
         const texto =
           `No encontré un servicio que coincida con "${userText}". Intentá con otra descripción o elegí una categoría: ` +
           opcionesCats.join(', ') +
@@ -307,8 +294,8 @@ export async function POST(req: Request) {
         '\n¿Con cuál seguimos? Podés responder con el número o el nombre completo.'
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Error consultando servicios. ${err?.message || ''}`
-      return NextResponse.json({ error: 'DB_SERVICIOS', message: msg }, { status: 400 })
+      const msg = `Error consultando servicios desde caché. ${err?.message || ''}`
+      return NextResponse.json({ error: 'KV_SERVICIOS', message: msg }, { status: 400 })
     }
   }
 
@@ -327,16 +314,15 @@ export async function POST(req: Request) {
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       })
     }
-    // Buscar id exacto
+    // Buscar id exacto en caché
     try {
-      const { data: fila } = await supabase
-        .from('servicios')
-        .select('id')
-        .eq('categoria', elegido.categoria)
-        .eq('subcategoria_1', elegido.subcategoria_1)
-        .eq('subcategoria_2', elegido.subcategoria_2)
-        .limit(1)
-        .maybeSingle()
+      const serviciosJSON: string | null = await kv.get('cache:servicios')
+      const rows: any[] = serviciosJSON ? JSON.parse(serviciosJSON) : []
+      const fila = rows.find((r) =>
+        String(r.categoria || '') === String(elegido.categoria || '') &&
+        String(r.subcategoria_1 || '') === String(elegido.subcategoria_1 || '') &&
+        String(r.subcategoria_2 || '') === String(elegido.subcategoria_2 || '')
+      )
       const servicio_id = fila?.id || null
       setState(key, {
         servicio: {
@@ -352,8 +338,8 @@ export async function POST(req: Request) {
       const texto = `Servicio seleccionado: ${String(elegido.categoria || '')} / ${String(elegido.subcategoria_1 || '')} / ${String(elegido.subcategoria_2 || '')}. Vamos con el brief. Empecemos por las preguntas generales.`
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Error resolviendo id del servicio. ${err?.message || ''}`
-      return NextResponse.json({ error: 'DB_SERV_ID', message: msg }, { status: 400 })
+      const msg = `Error resolviendo id del servicio desde caché. ${err?.message || ''}`
+      return NextResponse.json({ error: 'KV_SERV_ID', message: msg }, { status: 400 })
     }
   }
 
@@ -362,31 +348,26 @@ export async function POST(req: Request) {
     // Cargar preguntas si no están
     if (!state.preguntas || !Array.isArray(state.preguntas)) {
       try {
-        const generales = await supabase
-          .from('brief_preguntas')
-          .select('id, pregunta_texto, categoria, subcategoria_1, subcategoria_2')
-          .is('categoria', null)
-          .order('orden', { ascending: true })
-        if (generales.error) throw generales.error
-
-        const espec = state.servicio?.categoria
-          ? await supabase
-              .from('brief_preguntas')
-              .select('id, pregunta_texto, categoria, subcategoria_1, subcategoria_2')
-              .eq('categoria', state.servicio?.categoria)
-              .eq('subcategoria_1', state.servicio?.subcategoria_1 || null)
-              .eq('subcategoria_2', state.servicio?.subcategoria_2 || null)
-              .order('orden', { ascending: true })
-          : { data: [], error: null }
-        if ((espec as any).error) throw (espec as any).error
-
+        const preguntasJSON: string | null = await kv.get('cache:preguntas')
+        const todasLasPreguntas: any[] = preguntasJSON ? JSON.parse(preguntasJSON) : []
+        const preguntasGenerales = (todasLasPreguntas || [])
+          .filter((p) => p.categoria === null)
+          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+        const preguntasEspecificas = (todasLasPreguntas || [])
+          .filter(
+            (p) =>
+              String(p.categoria || '') === String(state.servicio?.categoria || '') &&
+              String(p.subcategoria_1 || '') === String(state.servicio?.subcategoria_1 || '') &&
+              String(p.subcategoria_2 || '') === String(state.servicio?.subcategoria_2 || '')
+          )
+          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
         const preguntas = ([] as any[])
-          .concat(Array.isArray(generales.data) ? generales.data : [])
-          .concat(Array.isArray((espec as any).data) ? (espec as any).data : [])
+          .concat(preguntasGenerales)
+          .concat(preguntasEspecificas)
         setState(key, { preguntas, preguntaIndex: 0 })
       } catch (err: any) {
-        const msg = `Error consultando preguntas del brief. ${err?.message || ''}`
-        return NextResponse.json({ error: 'DB_BRIEF_QS', message: msg }, { status: 400 })
+        const msg = `Error consultando preguntas del brief desde caché. ${err?.message || ''}`
+        return NextResponse.json({ error: 'KV_BRIEF_QS', message: msg }, { status: 400 })
       }
     }
 
@@ -475,23 +456,65 @@ export async function POST(req: Request) {
     // Proceder a cierre (Paso 6)
   }
 
-  // PASO 6: CIERRE DE TICKET (streaming final)
+  // PASO 6: CIERRE DE TICKET (Guardado, Notificación y Streaming final)
   if (state.step === 'FINALIZANDO') {
-    const resumen = buildResumen(state)
-    // Resetear estado a INICIAL antes de devolver
-    resetSession(key)
-    const stream = new ReadableStream({
-      start(controller) {
-        controller.enqueue(resumen)
-        controller.close()
-      },
-    })
-    return new Response(stream, {
-      headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
-        'Cache-Control': 'no-store',
-      },
-    })
+    let ticketId = 'T-ERROR'
+    let resumen = ''
+
+    try {
+      // 1. Generar Ticket ID (Ej: T-20251030-001)
+      const now = new Date()
+      const dateStr = now.toISOString().split('T')[0].replace(/-/g, '')
+      // (Simulación de contador diario)
+      const randomSuffix = Math.floor(Math.random() * 900 + 100).toString().padStart(3, '0')
+      ticketId = `T-${dateStr}-${randomSuffix}`
+
+      // 2. Preparar el objeto para Supabase
+      const solicitudData = {
+        ticket_id: ticketId,
+        solicitante_user_id: user.id, // ID del usuario autenticado
+        cliente_id: state.clienteId,
+        servicio_id: state.servicio?.servicio_id,
+        respuestas_brief: state.respuestasBrief, // Guarda el JSONB
+        link_diseño: state.disenoLink,
+        observaciones: state.observaciones,
+        estado: 'Ingresada',
+      }
+
+      // 3. Guardar en Supabase (Usando el cliente autenticado)
+      const { error: insertError } = await supabase
+        .from('solicitudes')
+        .insert(solicitudData)
+        .single()
+
+      if (insertError) {
+        // Si RLS falla o hay un error de BBDD
+        throw new Error(`Error de BBDD o RLS al guardar: ${insertError.message}`)
+      }
+
+      // 4. Generar Resumen (ahora con el TicketID)
+      resumen = buildResumen(state, ticketId)
+
+      // 5. Enviar Notificación (Placeholder)
+      // (No usamos 'await' para que la respuesta al usuario sea inmediata)
+      enviarNotificacionEmail(ticketId, state, resumen)
+    } catch (err: any) {
+      // Fallo en el guardado
+      console.error('Error en PASO 6 (FINALIZANDO):', err)
+      resumen = `¡Error al guardar tu ticket, Mar! ${err.message}. Por favor, contacta a soporte.`
+    } finally {
+      // 6. Resetear estado
+      resetSession(key)
+
+      // 7. Enviar respuesta final al usuario
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(resumen)
+          controller.close()
+        },
+      })
+      return new StreamingTextResponse(stream)
+    }
   }
 
   // Fallback si estado desconocido
@@ -501,7 +524,7 @@ export async function POST(req: Request) {
   })
 }
 
-function buildResumen(state: SessionState) {
+function buildResumen(state: SessionState, ticketId: string): string {
   const cliente = `${state.clienteNombre || '—'}${state.subdivision ? ' / ' + state.subdivision : ''}`
   const servicio = state.servicio
     ? `${String(state.servicio.categoria || '')} / ${String(state.servicio.subcategoria_1 || '')} / ${String(state.servicio.subcategoria_2 || '')}`
@@ -514,7 +537,7 @@ function buildResumen(state: SessionState) {
   const obs = state.observaciones || 'N/A'
   const despedida = '¡Muchas gracias por usarme, Mar! Tu solicitud quedó resumida arriba. Cualquier cosa, aquí estoy pa\' ayudarte.'
   return (
-    `Resumen de Ticket:\n` +
+    `Resumen de Ticket: ${ticketId}\n` +
     `- Cliente: ${cliente}\n` +
     `- Servicio: ${servicio}\n` +
     `- Respuestas del Brief:\n${briefTexto || '- (sin respuestas)'}\n` +
