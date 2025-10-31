@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { StreamingTextResponse } from 'ai'
 import { getUserFromAuthHeader, getSupabaseServerWithToken } from '@/lib/supabase/server'
 import { enviarNotificacionEmail } from '@/lib/email/notifications'
 
@@ -529,7 +528,9 @@ export async function POST(req: Request) {
           controller.close()
         },
       })
-      return new StreamingTextResponse(stream)
+      return new Response(stream, {
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      })
     }
   }
 
