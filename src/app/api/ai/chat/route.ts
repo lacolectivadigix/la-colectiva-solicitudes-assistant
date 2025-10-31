@@ -94,7 +94,9 @@ async function readUserText(req: Request): Promise<string> {
 
 export async function POST(req: Request) {
   // Autenticación: obtener token y usuario
-  const { user, token } = await getUserFromAuthHeader(req)
+  const user = await getUserFromAuthHeader(req)
+  const authHeader = req.headers.get('authorization')
+  const token = authHeader?.replace('Bearer ', '')
   if (!user || !token) {
     return new NextResponse('Acceso no autorizado', { status: 401 })
   }
@@ -114,8 +116,8 @@ export async function POST(req: Request) {
     return new NextResponse(saludo, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
   }
 
-  // PASO 1: CLIENTE
-  if (state.step === 'ESPERANDO_CLIENTE') {
+  // PASO 1: CLIENTE (búsqueda de cliente por nombre)
+  if (state.step === 'ESPERANDO_CLIENTE' && !state.clienteNombre) {
     const entrada = normalizeText(userText)
     if (!entrada || entrada.length < 2) {
       return new NextResponse(
@@ -235,8 +237,8 @@ export async function POST(req: Request) {
     }
   }
 
-  // PASO 2: SERVICIO
-  if (state.step === 'ESPERANDO_SERVICIO') {
+  // PASO 2: SERVICIO (búsqueda inicial cuando aún no hay opciones cargadas)
+  if (state.step === 'ESPERANDO_SERVICIO' && (!state.opcionesServicios || state.opcionesServicios.length === 0)) {
     const entrada = normalizeText(userText)
     const tokens = entrada.split(' ').filter(Boolean)
     try {
