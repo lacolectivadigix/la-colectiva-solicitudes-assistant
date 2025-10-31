@@ -28,6 +28,9 @@ En Vercel, configura estas variables en Project Settings → Environment Variabl
 - `npm run start`: arranca producción en `http://localhost:3000`
 - `npm run test`: ejecuta pruebas (Vitest)
 - `npm run test:auth`: prueba de autenticación (requiere variables Supabase configuradas)
+- `npm run smoke:chat`: prueba rápida del streaming de chat
+- `npm run signin -- <email> <password>`: inicia sesión vía script y muestra token
+- `npm run test:supabase`: verifica conectividad y configuración con Supabase
 
 ## Vercel
 
@@ -48,6 +51,13 @@ En Vercel, configura estas variables en Project Settings → Environment Variabl
 2. `npm run test` (Vitest) – debe pasar
 3. `npm run build` – debe completar sin errores
 4. `npm run dev` – navega a `http://localhost:3001`
+
+## Documentación del proceso reciente
+
+- Consulta `docs/proceso-c-ux-1-mvp.md` para detalles sobre:
+  - Reversión de KV y cron, y lectura directa en Supabase.
+  - Corrección de streaming en Next.js 16 (`Response` + `ReadableStream`).
+  - Ajustes de autenticación (`Authorization: Bearer <token>`) y guardas de estado.
 
 ## Autenticación y Autorización
 

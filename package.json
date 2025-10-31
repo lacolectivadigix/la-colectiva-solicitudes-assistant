@@ -8,7 +8,11 @@
     "start": "next start -p 3000",
     "test": "vitest run tests",
     "test:auth": "node ./scripts/auth-test.mjs",
-    "lint": "eslint"
+    "lint": "eslint",
+    "smoke:chat": "node ./scripts/test-stream-flash.mjs",
+    "signin": "node ./scripts/signin-test.mjs",
+    "test:supabase": "node ./scripts/test-supabase.mjs",
+    "docs:proceso": "node -e \"console.log('Documentación: docs/proceso-c-ux-1-mvp.md')\""
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
