@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { StreamingTextResponse } from 'ai'
 import { getUserFromAuthHeader, getSupabaseServerWithToken } from '@/lib/supabase/server'
-import { kv } from '@/lib/kv/client'
 import { enviarNotificacionEmail } from '@/lib/email/notifications'
 
 // Simple in-memory session store keyed by userId/sessionId
@@ -101,7 +100,7 @@ export async function POST(req: Request) {
     return new NextResponse('Acceso no autorizado', { status: 401 })
   }
 
-  // Cliente Supabase autenticado (SOLO PARA ESCRITURA en PASO 6)
+  // Cliente Supabase autenticado (lectura y escritura en Pasos 1, 2, 3 y 6)
   const supabase = getSupabaseServerWithToken(token)
 
   // Inicializar sesión usando el user.id
@@ -126,14 +125,16 @@ export async function POST(req: Request) {
       )
     }
     try {
-      const clientesJSON: string | null = await kv.get('cache:clientes')
-      const allRows: any[] = clientesJSON ? JSON.parse(clientesJSON) : []
-      const rows: any[] = allRows
-        .filter((r) => normalizeText(String(r.cliente || '')).includes(entrada))
-        .slice(0, 25)
+      const { data: clientes, error } = await supabase
+        .from('clientes_digix')
+        .select('id, cliente, division_pais')
+        .ilike('cliente', `%${userText}%`)
+        .limit(25)
+      if (error) throw error
+      const rows: any[] = Array.isArray(clientes) ? clientes : []
       if (rows.length === 0) {
-        // Intentar sugerencias por aproximación simple
-        const sugerencias = allRows
+        // Intentar sugerencias por aproximación simple (sobre resultados de consulta)
+        const sugerencias = rows
           .map((r: any) => String(r.cliente || ''))
           .filter((c) => normalizeText(c).includes(entrada.slice(0, Math.max(1, Math.min(entrada.length, 3)))))
           .slice(0, 5)
@@ -193,8 +194,8 @@ export async function POST(req: Request) {
       // Interpretamos siguiente entrada como subdivisión cuando esté en este estado y clienteNombre ya está definido.
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Oops, se presentó un problema consultando clientes desde caché. ${err?.message || 'Intentalo de nuevo en un ratico.'}`
-      return NextResponse.json({ error: 'KV_CLIENTES', message: msg }, { status: 400 })
+      const msg = `Oops, se presentó un problema consultando clientes en Supabase. ${err?.message || 'Intentalo de nuevo en un ratico.'}`
+      return NextResponse.json({ error: 'SUPABASE_CLIENTES', message: msg }, { status: 400 })
     }
   }
 
@@ -202,9 +203,12 @@ export async function POST(req: Request) {
   if (state.step === 'ESPERANDO_CLIENTE' && state.clienteNombre && !state.clienteId) {
     const subdiv = userText.trim()
     try {
-      const clientesJSON: string | null = await kv.get('cache:clientes')
-      const allRows: any[] = clientesJSON ? JSON.parse(clientesJSON) : []
-      const lista = allRows.filter((r) => String(r.cliente || '').trim() === state.clienteNombre)
+      const { data: clientesFiltrados, error: errCliente } = await supabase
+        .from('clientes_digix')
+        .select('id, cliente, division_pais')
+        .eq('cliente', state.clienteNombre)
+      if (errCliente) throw errCliente
+      const lista: any[] = Array.isArray(clientesFiltrados) ? clientesFiltrados : []
       let elegido: any | null = null
       if (/general|ninguna/i.test(subdiv)) {
         elegido = lista.find((r) => r.division_pais == null) || null
@@ -227,8 +231,8 @@ export async function POST(req: Request) {
       const texto = `Listo, quedó ${state.clienteNombre}${elegido.division_pais ? ' / ' + elegido.division_pais : ''}. Ahora, contame qué servicio necesitas.`
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Problema consultando subdivisión de cliente desde caché. ${err?.message || ''}`
-      return NextResponse.json({ error: 'KV_CLIENTS_SUBDIV', message: msg }, { status: 400 })
+      const msg = `Problema consultando subdivisión de cliente en Supabase. ${err?.message || ''}`
+      return NextResponse.json({ error: 'SUPABASE_CLIENTS_SUBDIV', message: msg }, { status: 400 })
     }
   }
 
@@ -237,8 +241,11 @@ export async function POST(req: Request) {
     const entrada = normalizeText(userText)
     const tokens = entrada.split(' ').filter(Boolean)
     try {
-      const serviciosJSON: string | null = await kv.get('cache:servicios')
-      const rows: any[] = serviciosJSON ? JSON.parse(serviciosJSON) : []
+      const { data: servRows, error: servErr } = await supabase
+        .from('servicios')
+        .select('id, categoria, subcategoria_1, subcategoria_2')
+      if (servErr) throw servErr
+      const rows: any[] = Array.isArray(servRows) ? servRows : []
       const candidatos = rows
         .map((r: any) => {
           const servNorm = normalizeText(String(r.subcategoria_2 || ''))
@@ -294,8 +301,8 @@ export async function POST(req: Request) {
         '\n¿Con cuál seguimos? Podés responder con el número o el nombre completo.'
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Error consultando servicios desde caché. ${err?.message || ''}`
-      return NextResponse.json({ error: 'KV_SERVICIOS', message: msg }, { status: 400 })
+      const msg = `Error consultando servicios en Supabase. ${err?.message || ''}`
+      return NextResponse.json({ error: 'SUPABASE_SERVICIOS', message: msg }, { status: 400 })
     }
   }
 
@@ -314,16 +321,18 @@ export async function POST(req: Request) {
         headers: { 'Content-Type': 'text/plain; charset=utf-8' },
       })
     }
-    // Buscar id exacto en caché
+    // Buscar id exacto en Supabase
     try {
-      const serviciosJSON: string | null = await kv.get('cache:servicios')
-      const rows: any[] = serviciosJSON ? JSON.parse(serviciosJSON) : []
-      const fila = rows.find((r) =>
-        String(r.categoria || '') === String(elegido.categoria || '') &&
-        String(r.subcategoria_1 || '') === String(elegido.subcategoria_1 || '') &&
-        String(r.subcategoria_2 || '') === String(elegido.subcategoria_2 || '')
-      )
-      const servicio_id = fila?.id || null
+      const { data: servRows2, error: servErr2 } = await supabase
+        .from('servicios')
+        .select('id, categoria, subcategoria_1, subcategoria_2')
+        .eq('categoria', elegido.categoria || null)
+        .eq('subcategoria_1', elegido.subcategoria_1 || null)
+        .eq('subcategoria_2', elegido.subcategoria_2 || null)
+        .limit(1)
+      if (servErr2) throw servErr2
+      const fila = Array.isArray(servRows2) ? servRows2[0] : null
+      const servicio_id = (fila && (fila as any).id) || null
       setState(key, {
         servicio: {
           categoria: elegido.categoria,
@@ -338,8 +347,8 @@ export async function POST(req: Request) {
       const texto = `Servicio seleccionado: ${String(elegido.categoria || '')} / ${String(elegido.subcategoria_1 || '')} / ${String(elegido.subcategoria_2 || '')}. Vamos con el brief. Empecemos por las preguntas generales.`
       return new NextResponse(texto, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } })
     } catch (err: any) {
-      const msg = `Error resolviendo id del servicio desde caché. ${err?.message || ''}`
-      return NextResponse.json({ error: 'KV_SERV_ID', message: msg }, { status: 400 })
+      const msg = `Error resolviendo id del servicio en Supabase. ${err?.message || ''}`
+      return NextResponse.json({ error: 'SUPABASE_SERV_ID', message: msg }, { status: 400 })
     }
   }
 
@@ -348,26 +357,33 @@ export async function POST(req: Request) {
     // Cargar preguntas si no están
     if (!state.preguntas || !Array.isArray(state.preguntas)) {
       try {
-        const preguntasJSON: string | null = await kv.get('cache:preguntas')
-        const todasLasPreguntas: any[] = preguntasJSON ? JSON.parse(preguntasJSON) : []
-        const preguntasGenerales = (todasLasPreguntas || [])
-          .filter((p) => p.categoria === null)
-          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
-        const preguntasEspecificas = (todasLasPreguntas || [])
-          .filter(
-            (p) =>
-              String(p.categoria || '') === String(state.servicio?.categoria || '') &&
-              String(p.subcategoria_1 || '') === String(state.servicio?.subcategoria_1 || '') &&
-              String(p.subcategoria_2 || '') === String(state.servicio?.subcategoria_2 || '')
-          )
-          .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
+        // 1. Preguntas Generales
+        const generales = await supabase
+          .from('brief_preguntas')
+          .select('id, pregunta_texto, categoria, subcategoria_1, subcategoria_2')
+          .is('categoria', null)
+          .order('orden', { ascending: true })
+        if (generales.error) throw generales.error
+
+        // 2. Preguntas Específicas
+        const espec = state.servicio?.categoria
+          ? await supabase
+              .from('brief_preguntas')
+              .select('id, pregunta_texto, categoria, subcategoria_1, subcategoria_2')
+              .eq('categoria', state.servicio?.categoria)
+              .eq('subcategoria_1', state.servicio?.subcategoria_1 || null)
+              .eq('subcategoria_2', state.servicio?.subcategoria_2 || null)
+              .order('orden', { ascending: true })
+          : { data: [], error: null }
+        if ((espec as any).error) throw (espec as any).error
+
         const preguntas = ([] as any[])
-          .concat(preguntasGenerales)
-          .concat(preguntasEspecificas)
+          .concat(Array.isArray(generales.data) ? generales.data : [])
+          .concat(Array.isArray((espec as any).data) ? (espec as any).data : [])
         setState(key, { preguntas, preguntaIndex: 0 })
       } catch (err: any) {
-        const msg = `Error consultando preguntas del brief desde caché. ${err?.message || ''}`
-        return NextResponse.json({ error: 'KV_BRIEF_QS', message: msg }, { status: 400 })
+        const msg = `Error consultando preguntas del brief en Supabase. ${err?.message || ''}`
+        return NextResponse.json({ error: 'SUPABASE_BRIEF_QS', message: msg }, { status: 400 })
       }
     }
 
