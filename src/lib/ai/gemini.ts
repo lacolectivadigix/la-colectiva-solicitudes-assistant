@@ -194,3 +194,6 @@ export async function streamTextFromPrompt(prompt: string, opts?: { model?: stri
   })
   return result
 }
+
+// Re-export para compatibilidad con el nuevo orquestador
+export { GoogleGenerativeAI }

@@ -30,7 +30,19 @@ export function getSupabaseServerWithToken(token: string) {
 
 export async function getUserFromAuthHeader(req: Request) {
   const authHeader = req.headers.get('authorization')
-  const token = authHeader?.replace('Bearer ', '')
+  let token = authHeader?.replace('Bearer ', '') || ''
+  // Fallback: intentar obtener el token desde cookie `sb-access-token`
+  if (!token) {
+    const cookieHeader = req.headers.get('cookie') || ''
+    const match = cookieHeader.match(/(?:^|;\s*)sb-access-token=([^;]+)/)
+    if (match && match[1]) {
+      try {
+        token = decodeURIComponent(match[1])
+      } catch {
+        token = match[1]
+      }
+    }
+  }
   if (!token) return null
   const supabase = getSupabaseServer()
   const { data, error } = await supabase.auth.getUser(token)

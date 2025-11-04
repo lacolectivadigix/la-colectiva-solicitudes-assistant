@@ -9,6 +9,8 @@ import { createClient } from '@/lib/supabase/client'
 export default function ChatPage() {
   const [message, setMessage] = useState('')
   const [messages, setMessages] = useState<Array<{ id: string; content: string; role: 'user' | 'assistant'; timestamp: Date }>>([])
+  const [ticketId, setTicketId] = useState<string | null>(null)
+  const [summary, setSummary] = useState<any>(null)
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
@@ -33,6 +35,8 @@ export default function ChatPage() {
 
     getUser()
   }, [router])
+
+  // Saludo automático desactivado: el asistente responde sólo cuando el usuario escribe
 
 
   const handleLogout = async () => {
@@ -67,17 +71,7 @@ export default function ChatPage() {
     const assistantId = (Date.now() + 1).toString()
     setMessages(prev => [...prev, { id: assistantId, content: '🤖 Pensando con La Colectiva… ✨', role: 'assistant', timestamp: new Date() }])
 
-    // Si es el primer turno, el usuario es solicitante y el mensaje es un saludo,
-    // respondemos con el mensaje inicial fijo y no llamamos a la IA.
-    const role = user?.user_metadata?.role || user?.app_metadata?.role
-    const isFirstTurn = messages.length === 0
-    const normalized = original.trim().toLowerCase()
-    const greeted = /^(hola|buenas|buenos dias|buenos días|hey|ola)\b/.test(normalized)
-    if (isFirstTurn && role === 'solicitante' && greeted) {
-      const firstReply = '¡Hola! Soy La Colectiva, tu asistente para crear solicitudes. Para comenzar, por favor dime, ¿para qué cliente es esta solicitud?'
-      setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: firstReply } : m))
-      return
-    }
+    // Eliminamos el bypass de saludo genérico: siempre pasamos por la API
 
     try {
       const controller = new AbortController()
@@ -135,6 +129,114 @@ export default function ChatPage() {
       setMessages(prev => prev.map(m => m.id === assistantId ? { ...m, content: `Error: ${msg}` } : m))
     }
   }
+
+  // Utilidades para extraer el resumen desde el historial
+  function extractSummaryData(allMessages: Array<{ id: string; content: string; role: 'user' | 'assistant'; timestamp: Date }>) {
+    const textFromUser = allMessages.filter(m => m.role === 'user').map(m => m.content)
+    const joined = textFromUser.join('\n')
+
+    const find = (regex: RegExp) => {
+      const m = joined.match(regex)
+      return m ? (m[0] || '').trim() : ''
+    }
+
+    const cliente = (() => {
+      // Ejemplos: "MSD COLOMBIA - ONCO", "MSD", etc.
+      const m = joined.match(/\bMSD(?:\s+COLOMBIA)?(?:\s*-\s*ONCO)?\b/i)
+      return m ? m[0] : ''
+    })()
+
+    const proyecto = (() => {
+      const m = joined.match(/\b[Ll]anzamiento[^\n]*/)
+      return m ? m[0] : ''
+    })()
+
+    const fechaEntrega = find(/\b\d{1,2}\s+de\s+[A-Za-zÁÉÍÓÚáéíóúñü]+\b/)
+    const lugarEntrega = (() => {
+      const m = joined.match(/\b[A-Za-zÁÉÍÓÚáéíóúñü]+,\s*[A-Za-zÁÉÍÓÚáéíóúñü]+\b/)
+      return m ? m[0] : ''
+    })()
+    const direccionEntrega = (() => {
+      const m = joined.match(/\b(Calle|Carrera|Avenida|Transversal|Diagonal)\b[^\n]*/i)
+      return m ? m[0] : ''
+    })()
+
+    const productoCantidad = (() => {
+      const m = joined.match(/\b(\d{1,6})\b[^\n]*\b(flyers?|folletos?|dipticos?|tripticos?|roll-?up|lona|vinilo)\b/i)
+      return m ? `${m[1]} ${m[2] ? m[2] : ''}`.trim() : ''
+    })()
+
+    const medidas = (() => {
+      const mA = joined.match(/\bA\d\b/)
+      const mDim = joined.match(/\b(\d{2,4})\s*x\s*(\d{2,4})\s*(mm|cm)\b/i)
+      return mA ? mA[0] : (mDim ? `${mDim[1]} x ${mDim[2]} ${mDim[3]}` : '')
+    })()
+
+    const papelGramaje = (() => {
+      const m = joined.match(/\b(Couche|Bond|Opalina|Cartulina)\b[^\n]*?(\d{2,3})\s*gr/i)
+      return m ? `${m[1]} ${m[2]}gr` : ''
+    })()
+
+    const impresionCaras = (() => {
+      const m = joined.match(/\b(\d\/\d)\b[^\n]*?(full\s*color|ambas\s*caras)/i)
+      return m ? `${m[1]} ${m[2] ? m[2] : ''}`.trim() : ''
+    })()
+
+    const acabado = (() => {
+      const plegado = joined.match(/plegado[^\n]*/i)
+      const laminado = joined.match(/laminado[^\n]*/i)
+      const parts = [] as string[]
+      if (plegado) parts.push(plegado[0])
+      if (laminado) parts.push(laminado[0])
+      return parts.join(' · ')
+    })()
+
+    const condiciones = (() => {
+      const m = joined.match(/(condicion|condición|observaci[oó]n|nota)[^\n]*/i)
+      return m ? m[0] : ''
+    })()
+
+    const contacto = {
+      nombre: (user?.user_metadata?.full_name || '').toString(),
+      email: (user?.email || '').toString()
+    }
+
+    const productos = [
+      {
+        descripcion: productoCantidad,
+        medidas,
+        papelGramaje,
+        impresionCaras,
+        acabado,
+      }
+    ].filter(p => p.descripcion || p.medidas || p.papelGramaje || p.impresionCaras || p.acabado)
+
+    return {
+      cliente,
+      proyecto,
+      fechaEntrega,
+      lugarEntrega,
+      direccionEntrega,
+      productos,
+      condiciones,
+      contacto,
+    }
+  }
+
+  // Vigilar mensajes para detectar ticket y construir el resumen
+  useEffect(() => {
+    const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant')
+    const content = lastAssistant?.content || ''
+    const ticketMatch = content.match(/\bS-\d+\b/i)
+    if (ticketMatch) {
+      const id = ticketMatch[0]
+      if (id !== ticketId) {
+        setTicketId(id)
+        const data = extractSummaryData(messages)
+        setSummary(data)
+      }
+    }
+  }, [messages])
 
 
 
@@ -207,6 +309,87 @@ export default function ChatPage() {
                 </div>
               ))
             )}
+
+            {ticketId && summary && (
+              <div className="mt-6 sm:mt-8">
+                <div className="border border-[var(--brand-border)] bg-[var(--brand-surface)] rounded-xl shadow-sm">
+                  <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-[var(--brand-border)]">
+                    <div>
+                      <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Ticket</div>
+                      <div className="text-lg sm:text-xl font-bold text-[var(--brand-text)]">{ticketId}</div>
+                    </div>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(ticketId || '')}
+                      className="px-3 py-1.5 text-xs font-medium text-[var(--brand-on-primary)] bg-[var(--brand-primary)] rounded-md hover:bg-[var(--brand-primary-hover)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-ring)]"
+                      title="Copiar número de ticket"
+                    >
+                      Copiar
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 py-4">
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Cliente</div>
+                        <div className="text-sm sm:text-base font-medium text-[var(--brand-text)]">{summary.cliente || '—'}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Proyecto</div>
+                        <div className="text-sm sm:text-base text-[var(--brand-text)]">{summary.proyecto || '—'}</div>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Fecha de entrega</div>
+                          <div className="text-sm sm:text-base text-[var(--brand-text)]">{summary.fechaEntrega || '—'}</div>
+                        </div>
+                        <div>
+                          <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Ciudad y país</div>
+                          <div className="text-sm sm:text-base text-[var(--brand-text)]">{summary.lugarEntrega || '—'}</div>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Dirección de entrega</div>
+                          <div className="text-sm sm:text-base text-[var(--brand-text)]">{summary.direccionEntrega || '—'}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Contacto</div>
+                      <div className="text-sm sm:text-base text-[var(--brand-text)]">{summary.contacto?.nombre || '—'}</div>
+                      <div className="text-sm sm:text-base text-[var(--brand-text)]">{summary.contacto?.email || '—'}</div>
+                      {summary.condiciones && (
+                        <div className="mt-2">
+                          <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)]">Condiciones especiales</div>
+                          <div className="text-sm sm:text-base text-[var(--brand-text)] whitespace-pre-line">{summary.condiciones}</div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="px-4 sm:px-6 py-4 border-t border-[var(--brand-border)]">
+                    <div className="text-xs uppercase tracking-wide text-[var(--brand-text-muted)] mb-2">Productos / Servicios</div>
+                    {summary.productos?.length ? (
+                      <div className="space-y-2">
+                        {summary.productos.map((p: any, idx: number) => (
+                          <div key={idx} className="rounded-lg border border-gray-200 bg-white p-3">
+                            <div className="text-sm sm:text-base font-medium text-gray-900">{p.descripcion || '—'}</div>
+                            <div className="mt-1 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[13px] sm:text-sm text-gray-700">
+                              <div><span className="text-gray-500">Medidas:</span> {p.medidas || '—'}</div>
+                              <div><span className="text-gray-500">Papel y gramaje:</span> {p.papelGramaje || '—'}</div>
+                              <div><span className="text-gray-500">Impresión y caras:</span> {p.impresionCaras || '—'}</div>
+                              <div><span className="text-gray-500">Acabado:</span> {p.acabado || '—'}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-600">Sin detalles de producto detectados.</div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
 
           <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">

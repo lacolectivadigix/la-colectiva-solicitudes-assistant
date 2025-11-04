@@ -1,0 +1,488 @@
+[
+  {
+    "id": "1",
+    "orden": 1,
+    "categoria": null,
+    "subcategoria_1": null,
+    "pregunta_texto": "Para que cliente y proyecto esta destinada esta compra",
+    "pregunta_detalle": null,
+    "nota_clave": null
+  },
+  {
+    "id": "2",
+    "orden": 2,
+    "categoria": null,
+    "subcategoria_1": null,
+    "pregunta_texto": "Fecha limite de entrega",
+    "pregunta_detalle": null,
+    "nota_clave": null
+  },
+  {
+    "id": "3",
+    "orden": 3,
+    "categoria": null,
+    "subcategoria_1": null,
+    "pregunta_texto": "Ciudad y pais de entrega",
+    "pregunta_detalle": null,
+    "nota_clave": null
+  },
+  {
+    "id": "4",
+    "orden": 4,
+    "categoria": null,
+    "subcategoria_1": null,
+    "pregunta_texto": "Direccion de entrega",
+    "pregunta_detalle": null,
+    "nota_clave": null
+  },
+  {
+    "id": "5",
+    "orden": 5,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales Informativos y Promocionales",
+    "pregunta_texto": "Producto y Cantidad",
+    "pregunta_detalle": "Tipo de material (Flyer, Diptico, Triptico, Folleto) y Tirada exacta (Ej: 5,000 unidades).",
+    "nota_clave": "La cantidad es el factor #1 del costo."
+  },
+  {
+    "id": "6",
+    "orden": 6,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales Informativos y Promocionales",
+    "pregunta_texto": "Medidas (Formato)",
+    "pregunta_detalle": "Dimensiones Abierto y Cerrado (si aplica el plegado) en cm o mm.",
+    "nota_clave": "Esencial para el calculo del pliego de impresion."
+  },
+  {
+    "id": "7",
+    "orden": 7,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales Informativos y Promocionales",
+    "pregunta_texto": "Papel y Gramaje",
+    "pregunta_detalle": "Nombre del papel (Ej: Couche, Bond) y su Grosor (Ej: 150 gr).",
+    "nota_clave": "Impacta la rigidez y el acabado (mate/brillante)."
+  },
+  {
+    "id": "8",
+    "orden": 8,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales Informativos y Promocionales",
+    "pregunta_texto": "Impresion y Caras",
+    "pregunta_detalle": "Numero de tintas por cara (Ej: 4/4 - Full Color ambas caras).",
+    "nota_clave": "El estandar de marketing es 4/4."
+  },
+  {
+    "id": "9",
+    "orden": 9,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales Informativos y Promocionales",
+    "pregunta_texto": "Plegado/Acabado Basico",
+    "pregunta_detalle": "Tipo de plegado (si aplica: C, Z, libro) y si lleva Laminado (Mate o Brillante).",
+    "nota_clave": "Define la estructura final de la pieza."
+  },
+  {
+    "id": "10",
+    "orden": 10,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Producto y Cantidad",
+    "pregunta_detalle": "Tipo de producto (Lona, Vinilo, Backing/Muro, Roll-up, Exhibidor) y Unidades Exactas.",
+    "nota_clave": "Establece la base de la cotizacion. Para vinilos y lonas, la cantidad suele ser por m2 (metros cuadrados) totales."
+  },
+  {
+    "id": "11",
+    "orden": 11,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Medidas y Proporcion",
+    "pregunta_detalle": "Alto x Ancho en metros (m)",
+    "nota_clave": "Fundamental. Si es un formato estandar (como Roll-up), especificar el tamao comun (Ej: 80200cm)."
+  },
+  {
+    "id": "12",
+    "orden": 12,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Tipo de Sustrato",
+    "pregunta_detalle": "Nombre especifico del material (Ej: Lona Front, Lona Backlight, Vinilo Adhesivo Mate, Vinilo Microperforado).",
+    "nota_clave": "Determina la resistencia y como se vera la luz a traves de el. Critico para precio."
+  },
+  {
+    "id": "13",
+    "orden": 13,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Uso y Ubicacion",
+    "pregunta_detalle": "Es para Interior o Exterior? Es temporal (1 mes) o de larga duracion (1 ao+)",
+    "nota_clave": "Afecta la calidad y durabilidad de la tinta (ej: tintas UV de mayor resistencia al sol)."
+  },
+  {
+    "id": "14",
+    "orden": 14,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Acabados para Montaje",
+    "pregunta_detalle": "Que requiere la pieza para instalarse (Ej: Ojales cada 50 cm, Dobladillos perimetrales, Corte a Registro o Troquelado).",
+    "nota_clave": "El acabado es esencial para la funcionalidad. Un error aqui arruina la instalacion."
+  },
+  {
+    "id": "15",
+    "orden": 15,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Estructura de Soporte",
+    "pregunta_detalle": "Si es un display, se requiere la Estructura (Roll-up, X-Banner, Marco de aluminio) o solo la Impresion para reutilizar la estructura existente",
+    "nota_clave": "Si incluye estructura, pedir especificaciones de calidad y si ofrece maletin de transporte."
+  },
+  {
+    "id": "16",
+    "orden": 16,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Instalacion y Logistica",
+    "pregunta_detalle": "El proveedor debe cotizar el servicio de Instalacion y/o Desmontaje Especificar la direccion y el piso/altura.",
+    "nota_clave": "Los costos de mano de obra y logistica (escalera, andamio, permisos) deben ir por separado en la cotizacion."
+  },
+  {
+    "id": "17",
+    "orden": 17,
+    "categoria": "Impresiones",
+    "subcategoria_1": "Materiales de Gran Formato y POP",
+    "pregunta_texto": "Resolucion de Impresion",
+    "pregunta_detalle": "Se requiere una calidad Estandar (para ver de lejos) o Fotografica (para ver de cerca, ej: muro en stand)",
+    "nota_clave": "La alta resolucion (mayor DPI) aumenta el tiempo de impresion y el costo."
+  },
+  {
+    "id": "18",
+    "orden": 18,
+    "categoria": "Traducciones",
+    "subcategoria_1": "Traducción general",
+    "pregunta_texto": "Tipo de Proyecto",
+    "pregunta_detalle": "Donde se usara la locucion (Ej: Video corporativo, Pauta en Redes Sociales/YouTube, Central telefonica (IVR), e-learning).",
+    "nota_clave": "CRiTICO: Determina los Derechos de Uso. La pauta publicitaria es mucho mas cara que un video interno."
+  },
+  {
+    "id": "19",
+    "orden": 19,
+    "categoria": "Traducciones",
+    "subcategoria_1": "Traducción general",
+    "pregunta_texto": "Talentos de Voz",
+    "pregunta_detalle": "Genero (Hombre/Mujer), Edad (Joven, Adulto, Mayor) y Tono (Amigable, Institucional, Energetico, Serio).",
+    "nota_clave": "Define el perfil del locutor. Solicitar demos o reels de voz del talento propuesto."
+  },
+  {
+    "id": "20",
+    "orden": 20,
+    "categoria": "Traducciones",
+    "subcategoria_1": "Traducción general",
+    "pregunta_texto": "Duracion / Extension",
+    "pregunta_detalle": "Duracion final en segundos o minutos. Si es un guion largo, especificar el numero de palabras o el numero de archivos/frases.",
+    "nota_clave": "Es la metrica base del precio. Si el guion es muy corto, a veces se cobra por \"tarifa minima\"."
+  },
+  {
+    "id": "21",
+    "orden": 21,
+    "categoria": "Traducciones",
+    "subcategoria_1": "Traducción general",
+    "pregunta_texto": "Medios y Vigencia",
+    "pregunta_detalle": "La difusion es regional o nacional/global Por cuanto tiempo se usara (Ej: 6 meses, 1 ao, Perpetuo)",
+    "nota_clave": "Los Derechos de Uso y la Vigencia son los mayores modificadores de precio en locucion."
+  },
+  {
+    "id": "22",
+    "orden": 22,
+    "categoria": "Traducciones",
+    "subcategoria_1": "Traducción Técnica / Médica",
+    "pregunta_texto": "Idiomas",
+    "pregunta_detalle": "Idioma Origen (Fuente) y Destino (Ej: Espaol a Ingles Britanico, Portugues de Brasil a Espaol Latam).",
+    "nota_clave": "La traduccion se cotiza por la combinacion lingistica. Asegurarse del dialecto (Ej: ingles US vs. UK)."
+  },
+  {
+    "id": "23",
+    "orden": 23,
+    "categoria": "Traducciones",
+    "subcategoria_1": "Traducción Técnica / Médica",
+    "pregunta_texto": "Extension y Formato",
+    "pregunta_detalle": "Numero total de palabras del texto a traducir. Cual es el formato del archivo? (Ej: Word, PDF, Subtitulos .SRT, Web/CMS).",
+    "nota_clave": "La metrica base del costo es el numero de palabras. El formato afecta la complejidad."
+  },
+  {
+    "id": "24",
+    "orden": 24,
+    "categoria": "Traducciones",
+    "subcategoria_1": "Traducción Técnica / Médica",
+    "pregunta_texto": "Nivel de Especializacion",
+    "pregunta_detalle": "El texto es General (marketing, blogs) o Tecnico/Especializado ( Medico, IT)",
+    "nota_clave": "La especializacion requiere un traductor con expertise en el tema y aumenta el costo por palabra."
+  },
+  {
+    "id": "25",
+    "orden": 25,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Fotografía",
+    "pregunta_texto": "Tipo de Evento",
+    "pregunta_detalle": "Que tipo de evento se filmara(Ej: Conferencia, Lanzamiento de Producto, Feria/Stand, Cena Corporativa).",
+    "nota_clave": "Define el ambiente, el tipo de planos necesarios (estatico vs. dinamico) y la necesidad de discrecion."
+  },
+  {
+    "id": "26",
+    "orden": 26,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Fotografía",
+    "pregunta_texto": "Fecha y Horario de Cobertura",
+    "pregunta_detalle": "Fecha(s) y Horario exacto de inicio a fin de la filmacion. (Ej: 9:00 AM a 5:00 PM - 8 horas continuas).",
+    "nota_clave": "CRiTICO. El costo se basa en las horas hombre/camara. Preguntar por la tarifa de horas extras."
+  },
+  {
+    "id": "27",
+    "orden": 27,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Fotografía",
+    "pregunta_texto": "Locacion y Logistica",
+    "pregunta_detalle": "Direccion exacta del evento y si es en Interiores o Exteriores. Hay restricciones de acceso/montaje",
+    "nota_clave": "Afecta los costos de transporte, equipo de iluminacion (necesario en interiores) y permisos."
+  },
+  {
+    "id": "28",
+    "orden": 28,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Fotografía",
+    "pregunta_texto": "Equipo Humano y Camaras",
+    "pregunta_detalle": "Cuantos camarografos se necesitan Se requiere un Director de Fotografia o solo operadores",
+    "nota_clave": "Un evento grande requiere 2 a 3 camarografos para cubrir diferentes angulos (escenario, publico, entrevistas)."
+  },
+  {
+    "id": "29",
+    "orden": 29,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Fotografía",
+    "pregunta_texto": "Material a Obtener",
+    "pregunta_detalle": "Que tipo de contenido se necesita (Ej: Cobertura total de las charlas, B-Roll del ambiente, Entrevistas rapidas a asistentes).",
+    "nota_clave": "Define el enfoque del camarografo durante el evento."
+  },
+  {
+    "id": "30",
+    "orden": 30,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Fotografía",
+    "pregunta_texto": "Producto Final Requerido",
+    "pregunta_detalle": "Que se entregara (Ej: 1 video After-Movie de 60s, 3 videos resumen de 15s para redes, Material bruto sin editar).",
+    "nota_clave": "Especificar si la cotizacion incluye edicion o solo la entrega de los archivos grabados."
+  },
+  {
+    "id": "31",
+    "orden": 31,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Fotografía",
+    "pregunta_texto": "Postproduccion (Si Aplica)",
+    "pregunta_detalle": "Duracion de los videos finales (si requieren edicion). Se incluye musica licenciada o se provee el audio",
+    "nota_clave": "Si se requiere edicion, detallar el tiempo de entrega y el numero de rondas de revision."
+  },
+  {
+    "id": "32",
+    "orden": 32,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Producción de Videos",
+    "pregunta_texto": "Tipo de Evento",
+    "pregunta_detalle": "Que tipo de evento se filmara (Ej: Conferencia, Lanzamiento de Producto, Feria/Stand, Cena Corporativa).",
+    "nota_clave": "Define el ambiente, el tipo de planos necesarios (estatico vs. dinamico) y la necesidad de discrecion."
+  },
+  {
+    "id": "33",
+    "orden": 33,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Producción de Videos",
+    "pregunta_texto": "Fecha y Horario de Cobertura",
+    "pregunta_detalle": "Fecha(s) y Horario exacto de inicio a fin de la filmacion. (Ej: 9:00 AM a 5:00 PM - 8 horas continuas).",
+    "nota_clave": "CRiTICO. El costo se basa en las horas hombre/camara. Preguntar por la tarifa de horas extras."
+  },
+  {
+    "id": "34",
+    "orden": 34,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Producción de Videos",
+    "pregunta_texto": "Locacion y Logistica",
+    "pregunta_detalle": "Direccion exacta del evento y si es en Interiores o Exteriores. Hay restricciones de acceso/montaje",
+    "nota_clave": "Afecta los costos de transporte, equipo de iluminacion (necesario en interiores) y permisos."
+  },
+  {
+    "id": "35",
+    "orden": 35,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Producción de Videos",
+    "pregunta_texto": "Equipo Humano y Camaras",
+    "pregunta_detalle": "Cuantos camarografos se necesitan Se requiere un Director de Fotografia o solo operadores",
+    "nota_clave": "Un evento grande requiere 2 a 3 camarografos para cubrir diferentes angulos (escenario, publico, entrevistas)."
+  },
+  {
+    "id": "36",
+    "orden": 36,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Producción de Videos",
+    "pregunta_texto": "Material a Obtener",
+    "pregunta_detalle": "Que tipo de contenido se necesita (Ej: Cobertura total de las charlas, B-Roll del ambiente, Entrevistas rapidas a asistentes).",
+    "nota_clave": "Define el enfoque del camarografo durante el evento."
+  },
+  {
+    "id": "37",
+    "orden": 37,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Producción de Videos",
+    "pregunta_texto": "Producto Final Requerido",
+    "pregunta_detalle": "Que se entregara (Ej: 1 video After-Movie de 60s, 3 videos resumen de 15s para redes, Material bruto sin editar).",
+    "nota_clave": "Especificar si la cotizacion incluye edicion o solo la entrega de los archivos grabados."
+  },
+  {
+    "id": "38",
+    "orden": 38,
+    "categoria": "Producción de Contenido Audiovisual",
+    "subcategoria_1": "Producción de Videos",
+    "pregunta_texto": "Postproduccion (Si Aplica)",
+    "pregunta_detalle": "Duracion de los videos finales (si requieren edicion). Se incluye musica licenciada o se provee el audio",
+    "nota_clave": "Si se requiere edicion, detallar el tiempo de entrega y el numero de rondas de revision."
+  },
+  {
+    "id": "39",
+    "orden": 39,
+    "categoria": "Logística de Viajes y Reservas",
+    "subcategoria_1": "Vuelos y Alojamiento",
+    "pregunta_texto": "Origen, Destino y Fechas",
+    "pregunta_detalle": "Ruta: Ciudad(es) de Origen y Ciudad de Destino. Fechas: Salida y Regreso exactas.",
+    "nota_clave": "Ubicacion: Ciudad y Zona (ej: cerca del centro de convenciones). Fechas: Check-in y Check-out exactas."
+  },
+  {
+    "id": "40",
+    "orden": 40,
+    "categoria": "Logística de Viajes y Reservas",
+    "subcategoria_1": "Vuelos y Alojamiento",
+    "pregunta_texto": "Pasajeros",
+    "pregunta_detalle": "Cantidad: Numero total de pasajeros (desglosar Adultos/Nios). Clase: Preferencia de Clase de asiento (Economica, Ejecutiva).",
+    "nota_clave": "Cantidad: Numero total de habitaciones. Tipo: Sencilla, Doble Twin (dos camas) o Matrimonial."
+  },
+  {
+    "id": "41",
+    "orden": 41,
+    "categoria": "Logística de Viajes y Reservas",
+    "subcategoria_1": "Vuelos y Alojamiento",
+    "pregunta_texto": "Preferencias de Calidad",
+    "pregunta_detalle": "Aerolineas: Si hay alguna aerolinea preferida o una que se deba evitar. Escalas: Maximo de escalas permitidas.",
+    "nota_clave": "Categoria: Estrellas del hotel (4 o 5 estrellas). Rating Minimo de usuarios (ej: 8.0/10)."
+  },
+  {
+    "id": "42",
+    "orden": 42,
+    "categoria": "Logística de Viajes y Reservas",
+    "subcategoria_1": "Vuelos y Alojamiento",
+    "pregunta_texto": "Costos y Servicios Incluidos",
+    "pregunta_detalle": "Equipaje: Se debe incluir el costo de equipaje documentado en la tarifa",
+    "nota_clave": "Amenidades: El Desayuno o el WiFi es indispensable? Politica de Cancelacion requerida (flexible o estricta)."
+  },
+  {
+    "id": "43",
+    "orden": 43,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": "Archivos de Diseño",
+    "pregunta_detalle": "Se adjunta el diseño 2D/3D (Planos) (Indicar formato: PDF, DWG, SketchUp, etc.). Se adjuntan los archivos de arte final para impresion",
+    "nota_clave": "CRiTICO. El proveedor debe confirmar que el diseo es \"construible\" con los materiales propuestos."
+  },
+  {
+    "id": "44",
+    "orden": 44,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": "Tipo y Alcance del Stand",
+    "pregunta_detalle": "Tipo de Stand: Personalizado (Hecho a medida) o Modular (Sistema reutilizable) Medidas: Base (m2) y Altura maxima.",
+    "nota_clave": "Define el costo total, ya que un stand personalizado requiere mas mano de obra especializada."
+  },
+  {
+    "id": "45",
+    "orden": 45,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": "Recinto y Fechas",
+    "pregunta_detalle": "Nombre del Evento y Recinto Ferial. Fechas de Montaje (Acceso) y Fechas de Desmontaje (Salida).",
+    "nota_clave": "Los horarios y restricciones del recinto (altura, acceso de camiones) impactan la logistica y tarifas."
+  },
+  {
+    "id": "46",
+    "orden": 46,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": " Materiales Estructurales",
+    "pregunta_detalle": "Cuales son los materiales clave (Ej: Madera MDF, Estructura de aluminio, Lonas tensadas, Cristal).",
+    "nota_clave": "Los materiales definen la calidad, durabilidad y el tiempo de fabricacion. Pedir especificaciones de resistencia."
+  },
+  {
+    "id": "47",
+    "orden": 47,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": "Elementos de Impresion (Grafica)",
+    "pregunta_detalle": "Tipo de Grafica: Lona, Vinilo, Tela Sublimada, Backlit (con luz trasera) Cantidad de m2 de impresion aproximada.",
+    "nota_clave": "Se debe asegurar que el proveedor pueda imprimir en alta resolucion y con la calidad requerida para el material."
+  },
+  {
+    "id": "48",
+    "orden": 48,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": "Mobiliario y Equipamiento",
+    "pregunta_detalle": "Mobiliario: (Ej: 1 Mesa de recepcion, 4 sillas, 1 bodega con llave). Equipamiento Electrico: (Ej: 4 tomas de corriente, 1 pantalla 50\", 1 nevera).",
+    "nota_clave": "Pedir la cotizacion del mobiliario y el equipo electrico como items de alquiler separados."
+  },
+  {
+    "id": "49",
+    "orden": 49,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": "Iluminacion y Electricidad",
+    "pregunta_detalle": "Requerimientos de Luz: Iluminacion basica (focos) o especializada (luces track, backlight LED) Potencia total requerida (para contratar en el recinto).",
+    "nota_clave": "La potencia debe ser suficiente para las pantallas y la iluminacion del stand."
+  },
+  {
+    "id": "50",
+    "orden": 50,
+    "categoria": "Fabricación y Montaje de Stands",
+    "subcategoria_1": "Stand",
+    "pregunta_texto": "Logistica y Logro",
+    "pregunta_detalle": "Se requiere Permisos de Montaje y gestion de la Limpieza en el recinto Se incluye Transporte del stand prefabricado al recinto",
+    "nota_clave": "La gestion de permisos y seguros es crucial. El proveedor debe cotizar esto dentro del costo logistico."
+  },
+  {
+    "id": "51",
+    "orden": 51,
+    "categoria": "Herramientas Digitales y Suscripciones",
+    "subcategoria_1": "Suscripciones",
+    "pregunta_texto": "Nombre de la Plataforma",
+    "pregunta_detalle": "Nombre exacto de la plataforma o herramienta (Ej: Freepik, Adobe Creative Cloud, SEMrush, Hootsuite).",
+    "nota_clave": "Base de la cotizacion. Asegurarse de cotizar la herramienta correcta."
+  },
+  {
+    "id": "52",
+    "orden": 52,
+    "categoria": "Herramientas Digitales y Suscripciones",
+    "subcategoria_1": "Suscripciones",
+    "pregunta_texto": "Nivel de Servicio Requerido",
+    "pregunta_detalle": "Que plan se necesita (Ej: Basico, Pro, Business, Enterprise). Que funcionalidades son indispensables (Ej: Acceso a API, Informes ilimitados, X busquedas/mes).",
+    "nota_clave": "Los precios varian drasticamente segun el nivel de features y limites de uso."
+  },
+  {
+    "id": "53",
+    "orden": 53,
+    "categoria": "Herramientas Digitales y Suscripciones",
+    "subcategoria_1": "Suscripciones",
+    "pregunta_texto": "Licencia y Usuarios",
+    "pregunta_detalle": "Cuantos usuarios (asientos) necesitan acceso simultaneo Se requiere una licencia individual o una licencia de equipo/corporativa",
+    "nota_clave": "CRiTICO. El costo se escala por el numero de usuarios. La licencia de equipo ofrece gestion centralizada."
+  },
+  {
+    "id": "54",
+    "orden": 54,
+    "categoria": "Herramientas Digitales y Suscripciones",
+    "subcategoria_1": "Suscripciones",
+    "pregunta_texto": "Frecuencia y Duracion",
+    "pregunta_detalle": "Frecuencia de Pago: Se cotiza la suscripcion Mensual o Anual Duracion: Se busca un contrato por 6 meses, 1 ao o 2 aos",
+    "nota_clave": "Los planes anuales casi siempre ofrecen un ahorro significativo frente a los mensuales."
+  }
+]

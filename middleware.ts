@@ -81,15 +81,20 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
+  // Validación de estado: se aplica sólo fuera de /app para no bloquear el chat
   const status = (data.user.app_metadata as any)?.status || (data.user.user_metadata as any)?.status
-  if (status && String(status).toLowerCase() !== 'activo') {
-    if (url.pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'Forbidden: user not active' }, { status: 403 })
+  const isChatApp = url.pathname.startsWith('/app')
+  if (!isChatApp) {
+    const norm = (s: unknown) => String(s || '').trim().toLowerCase()
+    const activeValues = new Set(['activo', 'active', 'enabled', 'true', '1'])
+    if (status && !activeValues.has(norm(status))) {
+      if (url.pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Forbidden: user not active' }, { status: 403 })
+      }
+      const redirectUrl = new URL('/login', req.url)
+      redirectUrl.searchParams.set('redirectedFrom', url.pathname)
+      return NextResponse.redirect(redirectUrl)
     }
-    const redirectUrl = new URL('/login', req.url)
-    redirectUrl.searchParams.set('inactive', '1')
-    redirectUrl.searchParams.set('redirectedFrom', url.pathname)
-    return NextResponse.redirect(redirectUrl)
   }
 
   return res

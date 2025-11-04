@@ -12,7 +12,8 @@
     "smoke:chat": "node ./scripts/test-stream-flash.mjs",
     "signin": "node ./scripts/signin-test.mjs",
     "test:supabase": "node ./scripts/test-supabase.mjs",
-    "docs:proceso": "node -e \"console.log('Documentación: docs/proceso-c-ux-1-mvp.md')\""
+    "docs:proceso": "node -e \"console.log('Documentación: docs/proceso-c-ux-1-mvp.md')\"",
+    "cache:build": "node ./scripts/build-cache.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
